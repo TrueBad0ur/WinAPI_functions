@@ -3,10 +3,22 @@
 #include <string>
 #include <Windows.h>
 
+typedef int (WINAPI* fMsgBox) (HWND, LPCWSTR, LPCWSTR, UINT);
+typedef struct {
+	fMsgBox pFunc;
+	HWND hWnd;
+	LPCWSTR lpTextb;
+	LPCWSTR lpCaption;
+	UINT uType;
+} MsgParam;
+
 class WinApi {
 private:
 	void __PrintProcessNameAndID(DWORD);
+	static void WINAPI __MsgBoxWrap(MsgParam* p);
+	static void __after_MsgBoxWrap();
 public:
+	void _RunMessageBoxInAnotherProcessThread();
 	void _EnumSystemProcesses();
 	void _DynamicDLLImport();
 	void _NotepadChangeTitleExample();

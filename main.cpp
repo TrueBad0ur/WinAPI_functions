@@ -31,6 +31,8 @@ int main(int argc, char* argv[]) {
 		WinApiObject._DynamicDLLImport();
 	else if (!strcmp(argv[1], "-E"))
 		WinApiObject._EnumSystemProcesses();
+	else if (!strcmp(argv[1], "-R"))
+		WinApiObject._RunMessageBoxInAnotherProcessThread();
 
 	return 0;
 }

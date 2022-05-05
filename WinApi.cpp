@@ -5,7 +5,73 @@
 #include <strsafe.h>
 #include <psapi.h>
 #include <string>
+#include <tlhelp32.h>
 
+
+void WINAPI WinApi::__MsgBoxWrap(MsgParam* p) {
+    p->pFunc(p->hWnd, p->lpTextb, p->lpCaption, p->uType);
+}
+
+void WinApi::__after_MsgBoxWrap() {}
+
+void WinApi::_RunMessageBoxInAnotherProcessThread() {
+    // Realization was taken for here: https://www.c-plusplus.net/forum/topic/301481/virtualallocex-amp-createremotethread-gt-messagebox/15
+    // works only in Release mode!
+    typedef int (WINAPI* fMsgBox) (HWND, LPCWSTR, LPCWSTR, UINT);
+    typedef struct {
+        fMsgBox pFunc;
+        HWND hWnd;
+        LPCWSTR lpTextb;
+        LPCWSTR lpCaption;
+        UINT uType;
+    } MsgParam;
+
+    HANDLE hProcess;    // process 
+    HANDLE hThread;        // remote thread 
+    LPVOID pParam;        // pointer to allocated param space 
+    LPVOID pFunc;        // pointer to allocated function space 
+    DWORD sizeOfFunc;    // size of function to copy 
+    DWORD procID;        // process ID 
+    DWORD exitCode;        // CreateRemoteThread Exit Code 
+    MsgParam param;        // MessageBox parameter inkl func. pointer 
+    HWND hWnd;
+
+    hWnd = FindWindow(0, L"Untitled - Notepad");
+
+    param.pFunc = (fMsgBox)GetProcAddress(GetModuleHandle(L"User32"), "MessageBoxW");
+    param.hWnd = NULL;
+    param.lpTextb = 0;
+    param.lpCaption = 0;
+    param.uType = MB_YESNO;
+
+    GetWindowThreadProcessId(hWnd, &procID);
+    hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, procID);
+    if (!hProcess) {
+        printf("OpenProcess failed! Error: %d\n", GetLastError());
+    }
+
+    sizeOfFunc = (PBYTE)__after_MsgBoxWrap - (PBYTE)__MsgBoxWrap;
+    //sizeOfFunc = 128;
+    pParam = VirtualAllocEx(hProcess, NULL, sizeof(MsgParam), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (pParam == NULL)
+        printf("VirtualAllocEx failed! Error: %d\n", GetLastError());
+
+    pFunc = VirtualAllocEx(hProcess, 0, sizeOfFunc, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (pFunc == NULL)
+        printf("VirtualAllocEx failed! Error: %d\n", GetLastError());
+
+    WriteProcessMemory(hProcess, pParam, (LPVOID)&param, sizeof(MsgParam), NULL);
+    WriteProcessMemory(hProcess, pFunc, (LPVOID)__MsgBoxWrap, sizeOfFunc, 0);
+
+    hThread = CreateRemoteThread(hProcess, NULL, (SIZE_T)0, (LPTHREAD_START_ROUTINE)pFunc, (void*)pParam, (DWORD)0, NULL);
+    if (!hThread)
+        printf("CreateRemoteThread failed! Error: %d\n", GetLastError());
+
+    WaitForSingleObject(hThread, INFINITE);
+    GetExitCodeThread(hThread, &exitCode);
+    CloseHandle(hProcess);
+    //system("pause");
+}
 
 // function helper for EnumSystemProcesses()
 void WinApi::__PrintProcessNameAndID(DWORD processID) {
@@ -101,7 +167,8 @@ void WinApi::__Help() {
 		-L : List files\n \
 				also provide path: -L C:\\\\Files\\ \n \
 		-N : Change title and text of notepad process \n \
-		-E : Ennumerate processes \n";
+		-E : Ennumerate processes \n \
+		-R : Run function in thread of another process\n";
 	exit(0);
 }
 void WinApi::_ShowWindow() {
