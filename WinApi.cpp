@@ -8,10 +8,12 @@
 #include <tlhelp32.h>
 
 
+// function helper for _RunMessageBoxInAnotherProcessThread
 void WINAPI WinApi::__MsgBoxWrap(MsgParam* p) {
     p->pFunc(p->hWnd, p->lpTextb, p->lpCaption, p->uType);
 }
 
+// function helper for _RunMessageBoxInAnotherProcessThread
 void WinApi::__after_MsgBoxWrap() {}
 
 void WinApi::_RunMessageBoxInAnotherProcessThread() {
@@ -168,7 +170,7 @@ void WinApi::__Help() {
 				also provide path: -L C:\\\\Files\\ \n \
 		-N : Change title and text of notepad process \n \
 		-E : Ennumerate processes \n \
-		-R : Run function in thread of another process\n";
+		-R : Run MessageBoxW in thread of another process\n";
 	exit(0);
 }
 void WinApi::_ShowWindow() {
