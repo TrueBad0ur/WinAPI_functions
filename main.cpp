@@ -6,9 +6,9 @@
 int main(int argc, char* argv[]) {
 	WinApi WinApiObject;
 
-	std::cout << argc << std::endl;
-	for (int i = 0; i < argc; i++)
-		std::cout << argv[i] << std::endl;
+	//std::cout << argc << std::endl;
+	//for (int i = 0; i < argc; i++)
+	//	std::cout << argv[i] << std::endl;
 
 	if (argc <= 1) {
 		WinApiObject.__Help();
@@ -35,6 +35,8 @@ int main(int argc, char* argv[]) {
 		WinApiObject._RunMessageBoxInAnotherProcessThread();
 	else if (!strcmp(argv[1], "-K"))
 		WinApiObject._Keylogger();
+	else if (!strcmp(argv[1], "-APC"))
+		WinApiObject._APCFunction();
 
 	return 0;
 }

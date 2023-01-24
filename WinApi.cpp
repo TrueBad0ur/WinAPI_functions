@@ -9,6 +9,31 @@
 HHOOK WinApi::_hook;
 KBDLLHOOKSTRUCT WinApi::kbdStruct;
 
+// internal APC functions
+
+void WinApi::Papcfunc1() {
+    MessageBoxW(0, L"1", L"1", 0);
+}
+
+void WinApi::Papcfunc2() {
+    MessageBoxW(0, L"2", L"2", 0);
+}
+
+void WinApi::Papcfunc3() {
+    MessageBoxW(0, L"3", L"3", 0);
+}
+
+// function to show APC work in user space
+void WinApi::_APCFunction() {
+    HANDLE thr = GetCurrentThread();
+
+    QueueUserAPC((PAPCFUNC)Papcfunc1, thr, 1);
+    QueueUserAPC((PAPCFUNC)Papcfunc2, thr, 1);
+    QueueUserAPC((PAPCFUNC)Papcfunc3, thr, 1);
+
+    SleepEx(1, 1);
+}
+
 // function helper for _Keylogger
 int WinApi::__textWriteToFile(std::string letter) {
     HANDLE hFile = CreateFile(
@@ -236,15 +261,16 @@ void WinApi::_InfoAboutSystem() {
 void WinApi::__Help() {
 	system("cls");
     std::cout << "Enter one of these:\n \
-		-H : help\n \
-		-S : call MessageBoxW\n \
-		-I : Info about system\n \
-		-L : List files\n \
-				also provide path: -L C:\\\\Files\\ \n \
-		-N : Change title and text of notepad process \n \
-		-E : Ennumerate processes \n \
-		-R : Run MessageBoxW in thread of another process\n \
-		-K : Run keylogger\n";
+		-H   : help\n \
+		-S   : call MessageBoxW\n \
+		-I   : Info about system\n \
+		-L   : List files\n \
+			    	also provide path: -L C:\\\\Files\\ \n \
+		-N   : Change title and text of notepad process \n \
+		-E   : Ennumerate processes \n \
+		-R   : Run MessageBoxW in thread of another process\n \
+		-K   : Run keylogger\n \
+		-APC : Run APC functions\n";
 	exit(0);
 }
 void WinApi::_ShowWindow() {

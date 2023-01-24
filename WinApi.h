@@ -23,7 +23,11 @@ private:
 	void __PrintProcessNameAndID(DWORD);
 	static void WINAPI __MsgBoxWrap(MsgParam*);
 	static void __after_MsgBoxWrap();
+	static void Papcfunc1();
+	static void Papcfunc2();
+	static void Papcfunc3();
 public:
+	void _APCFunction();
 	void _Keylogger();
 	void _RunMessageBoxInAnotherProcessThread();
 	void _EnumSystemProcesses();
